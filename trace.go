@@ -26,6 +26,10 @@ type TraceConfig struct {
 	TraceAttributes []attribute.KeyValue
 }
 
+func Provider() *trace.TracerProvider {
+	return tp
+}
+
 func Tracer() ot.Tracer {
 	return tr
 }
@@ -41,9 +45,6 @@ func ConfigureWithConfig(conf TraceConfig) *trace.TracerProvider {
 		logrus.Fatalf("unable to create jaeger client : %s", err.Error())
 	}
 
-	// set tracer name
-	tr = otel.Tracer(conf.ServiceName)
-
 	// set trace provider
 	tp = trace.NewTracerProvider(
 		trace.WithBatcher(exporter),
@@ -52,6 +53,9 @@ func ConfigureWithConfig(conf TraceConfig) *trace.TracerProvider {
 			setupAttributes(conf)...,
 		)),
 	)
+
+	// set tracer name
+	tr = tp.Tracer(conf.ServiceName)
 
 	pp := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
 
