@@ -6,6 +6,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.20.0"
@@ -15,6 +16,7 @@ import (
 var (
 	tp *trace.TracerProvider
 	tr ot.Tracer
+	pr propagation.TextMapPropagator
 )
 
 type TraceConfig struct {
@@ -28,6 +30,10 @@ type TraceConfig struct {
 
 func Provider() *trace.TracerProvider {
 	return tp
+}
+
+func Propagator() propagation.TextMapPropagator {
+	return pr
 }
 
 func Tracer() ot.Tracer {
@@ -56,11 +62,10 @@ func ConfigureWithConfig(conf TraceConfig) *trace.TracerProvider {
 
 	// set tracer name
 	tr = tp.Tracer(conf.ServiceName)
-
-	pp := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
+	pr = b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
 
 	otel.SetTracerProvider(tp)
-	otel.SetTextMapPropagator(pp)
+	otel.SetTextMapPropagator(pr)
 
 	return tp
 }
