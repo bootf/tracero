@@ -31,6 +31,10 @@ type Config struct {
 	TraceAttributes []attribute.KeyValue
 }
 
+func Tracer() ot.Tracer {
+	return tr
+}
+
 func Connect(ctx context.Context, conf Config) *trace.TracerProvider {
 	exporter, err := otlptracegrpc.New(ctx,
 		otlptracegrpc.WithEndpoint(fmt.Sprintf("%s:%s", conf.AgentHost, conf.AgentPort)),
